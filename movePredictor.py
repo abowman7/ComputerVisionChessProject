@@ -1,0 +1,86 @@
+# this code assumes that it is receiving an array matching the shape of a chess board
+# in each location should be a number from 0 to 12, where 0 is empty square, 1 or 7 is pawn, 2 or 8 is rook,
+# 3 or 9 is knight, 4 or 10 is bishop, 5 or 11 is queen, 6 or 12 is king. 1-6 is White, 7-12 is black
+# Location 0,0 in the array is essentiall the top left corner, which is the equivalent to tile a8 on a chess board.
+# The output of this code is a string which matches the structure of Forsyth-Edwards Notation (FEN).
+# The intention is that the FEN string is then passed to stockfish.set_fen_position(FENstring)
+# such that after this stockfish.get_best_move() can be run to output a best move in algebraic chess notation
+# as a string, which can then be printed/displayed
+# e.g. this is the starting FEN position rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+# The code also assumes it is receiving an input of a single character "b" or "w"
+# which represents a user input for whose turn it is for the current board position
+
+def generateFEN(boardArray, turn):
+    fenString = ""
+    openSpaces = 0
+    isOpen = False
+    # (x,y) = (0,0) represents the top left corner of the array, which is a8
+    for x in range(8):
+        #x represents numbers 8 through 1 as 0 through 7
+        for y in range(8):
+            #y represents letters a through h as 0 through 7
+            tile = boardArray[x,y]
+            if tile == 0: #tile empty
+                if isOpen == False:
+                    isOpen = True
+                    openSpaces = 1
+                else:
+                    openSpaces += 1
+            else: #tile filled
+                if isOpen == True:
+                    isOpen = False
+                    fenString += str(openSpaces)
+                    openSpaces = 0
+                if tile == 1 or tile == 7:
+                    fenString += "p"
+                elif tile == 2 or tile == 8:
+                    fenString += "r"
+                elif tile == 3 or tile == 9:
+                    fenString += "n"
+                elif tile == 4 or tile == 10:
+                    fenString += "b"
+                elif tile == 5 or tile == 11:
+                    fenString += "q"
+                elif tile == 6 or tile == 12:
+                    fenString += "k"
+                if tile <= 6 and tile >= 1:
+                    fenString = fenString[:len(fenString)-1] + fenString[len(fenString)-1].upper()
+            if y == 7:
+                if isOpen == True:
+                    isOpen = False
+                    fenString += str(openSpaces)
+                    openSpaces = 0
+                if x != 7:
+                    fenString += '/'
+                else:
+                    fenString += ' '
+    fenString += turn + ' ' #this satisfies the second field
+
+    wCastle = ""
+    bCastle = ""
+    if (boardArray[7,4] != 6) or (boardArray[7,0] != 2 and boardArray[7,7] != 2): #checking to see if castling
+        wCastle = ""                                                             #is available for white
+    elif boardArray[7,0] != 2 and boardArray[7,7] == 2:
+        wCastle = "K"
+    elif boardArray[7,0] == 2 and boardArray[7,7] != 2:
+        wCastle = "Q"
+    else:
+        wCastle = "KQ"
+    if (boardArray[0,4] != 12) or (boardArray[0,0] != 8 and boardArray[0,7] != 8): #checking to see if castling
+        bCastle = ""                                                              #is available for black
+    elif boardArray[0,0] != 8 and boardArray[0,7] == 8:
+        bCastle = "k"
+    elif boardArray[0,0] == 8 and boardArray[0,7] != 8:
+        bCastle = "q"
+    else:
+        bCastle = "kq"
+    if wCastle == bCastle:
+        fenString += '-'
+    else:
+        fenstring += wCastle + bCastle
+
+
+    fenString += " - 0 2" #handles last 3 fields, but we aren't caring about them much right now
+
+
+    return fenString

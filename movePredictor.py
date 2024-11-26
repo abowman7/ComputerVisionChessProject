@@ -14,7 +14,7 @@
 # then you must provide your own path to stockfish-windows-x86-64-avx2.exe for the code to execute properly
 from stockfish import Stockfish
 
-def generateFEN(boardArray, turn):
+def generateMove(boardArray, turn):
     fenString = ""
     openSpaces = 0
     isOpen = False
@@ -23,7 +23,7 @@ def generateFEN(boardArray, turn):
         #x represents numbers 8 through 1 as 0 through 7
         for y in range(8):
             #y represents letters a through h as 0 through 7
-            tile = boardArray[x,y]
+            tile = boardArray[x][y]
             if tile == 0: #tile empty
                 if isOpen == False:
                     isOpen = True
@@ -62,32 +62,32 @@ def generateFEN(boardArray, turn):
 
     wCastle = ""
     bCastle = ""
-    if (boardArray[7,4] != 6) or (boardArray[7,0] != 2 and boardArray[7,7] != 2): #checking to see if castling
+    if (boardArray[7][4] != 6) or (boardArray[7][0] != 2 and boardArray[7][7] != 2): #checking to see if castling
         wCastle = ""                                                             #is available for white
-    elif boardArray[7,0] != 2 and boardArray[7,7] == 2:
+    elif boardArray[7][0] != 2 and boardArray[7][7] == 2:
         wCastle = "K"
-    elif boardArray[7,0] == 2 and boardArray[7,7] != 2:
+    elif boardArray[7][0] == 2 and boardArray[7][7] != 2:
         wCastle = "Q"
     else:
         wCastle = "KQ"
-    if (boardArray[0,4] != 12) or (boardArray[0,0] != 8 and boardArray[0,7] != 8): #checking to see if castling
+    if (boardArray[0][4] != 12) or (boardArray[0][0] != 8 and boardArray[0][7] != 8): #checking to see if castling
         bCastle = ""                                                              #is available for black
-    elif boardArray[0,0] != 8 and boardArray[0,7] == 8:
+    elif boardArray[0][0] != 8 and boardArray[0][7] == 8:
         bCastle = "k"
-    elif boardArray[0,0] == 8 and boardArray[0,7] != 8:
+    elif boardArray[0][0] == 8 and boardArray[0][7] != 8:
         bCastle = "q"
     else:
         bCastle = "kq"
     if wCastle == bCastle:
         fenString += '-'
     else:
-        fenstring += wCastle + bCastle
+        fenString += wCastle + bCastle
 
-
-    fenString += " - 0 2" #handles last 3 fields, but we aren't caring about them much right now
+    #determined that the last 3 fields are not necessary for Stockfish to still make its prediction
+    #fenString += " - 0 1" #handles last 3 fields, but we aren't caring about them much right now
 
     #below, use your own path for your own stockfish install
-    stockfish = Stockfish(path="/Users/david/Downloads/stockfish-windows-x86-64-avx2/stockfish/stockfish-windows-x86-64-avx2.exe", depth=18, parameters={"Threads": 2, "Minimum Thinking Time": 30})
+    stockfish = Stockfish(path="/Users/david/Downloads/stockfish-windows-x86-64-avx2/stockfish/stockfish-windows-x86-64-avx2.exe", depth=18, parameters={"Threads": 4, "Minimum Thinking Time": 30})
     stockfish.update_engine_parameters({"Hash": 2048, "UCI_Chess960": "true"})
     stockfish.set_fen_position(fenString)
     bestMove =  stockfish.get_best_move()
@@ -99,3 +99,8 @@ def generateFEN(boardArray, turn):
 #stockfish.set_position(["e2e4", "e7e6"])
 #move = stockfish.get_best_move()
 #print(move) #should print d2d4
+
+#this array represents the starting position of the chess
+exampleArray = [[8,9,10,11,12,10,9,8],[7,7,7,7,7,7,7,7],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1],[2,3,4,5,6,4,3,2]]
+outp = generateMove(exampleArray, 'w')
+print(outp)#should print e2e4

@@ -15,7 +15,7 @@ def showImage(a, fmt='jpeg', rng=[0,1]):
   a = np.uint8(np.clip(a, 0, 255))
   PIL.Image.fromarray(a).show()
 
-img_file = 'BoardSetup.jpg'
+img_file = 'Game7.jpeg'
 img = PIL.Image.open(f"input_boards/{img_file}")
 
 #convert from png to jpg if png

@@ -3,25 +3,90 @@ import glob
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
+from tensorflow import keras
+from keras import optimizers
 from sklearn.preprocessing import LabelEncoder
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, Activation
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.preprocessing.image import img_to_array
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import ModelCheckpoint
 
-def load_images_from_folders(base_folder):
-    # Initialize lists to hold images and their labels
+classifications = [
+    "white_pawn_white_space", #1
+    "white_pawn_black_space", #2
+    "white_rook_white_space", #3
+    "white_rook_black_space", #4
+    "white_knight_white_space", #5
+    "white_knight_black_space", #6
+    "white_bishop_white_space", #7
+    "white_bishop_black_space", #8
+    "white_queen_white_space", #9
+    #"white_queen_black_space", #10
+    #"white_king_white_space", #11
+    "white_king_black_space", #12
+    
+    "black_pawn_white_space", #13
+    "black_pawn_black_space", #14
+    "black_rook_white_space", #15
+    "black_rook_black_space", #15
+    "black_knight_white_space", #16
+    "black_knight_black_space", #17
+    "black_bishop_white_space", #18
+    "black_bishop_black_space", #20
+    #"black_queen_white_space", #21
+    "black_queen_black_space", #22
+    "black_king_white_space", #23
+    "black_king_black_space", #24
+
+    "empty_white_space", #25
+    "empty_black_space", #26
+    ]
+
+num_classes = len(classifications)
+
+classes = {
+    "white_pawn_white_space": 0,
+    "white_pawn_black_space": 1,
+    "white_rook_white_space": 2,
+    "white_rook_black_space": 3,
+    "white_knight_white_space": 4,
+    "white_knight_black_space": 5,
+    "white_bishop_white_space": 6,
+    "white_bishop_black_space": 7,
+    "white_queen_white_space": 8,
+    "white_queen_black_space": 9,
+    "white_king_white_space": 10,
+    "white_king_black_space": 11,
+    "black_pawn_white_space": 12,
+    "black_pawn_black_space": 13,
+    "black_rook_white_space": 14,
+    "black_rook_black_space": 15,
+    "black_knight_white_space": 16,
+    "black_knight_black_space": 17,
+    "black_bishop_white_space": 18,
+    "black_bishop_black_space": 19,
+    "black_queen_white_space": 20,
+    "black_queen_black_space": 21,
+    "black_king_white_space": 22,
+    "black_king_black_space": 23,
+    "empty_white_space": 24,
+    "empty_black_space": 25,
+}
+
+def load_images_from_folders():
     images = []
     labels = []
     
-    # Loop through each folder in the base folder
-    for root, dirs, files in os.walk(base_folder):
+    path = "./training_set"
+    for root, dirs, files in os.walk(path):
         # Skip the base folder itself, only process subfolders
-        if root == base_folder:
+        if root == path:
             continue
         
         # Extract the label from the folder name (this will be the folder name itself)
@@ -33,24 +98,23 @@ def load_images_from_folders(base_folder):
         # Loop through each image file and load it
         for image_file in image_files:
             try:
-                # Open the image using Pillow
+              # Open the image using Pillow
                 img = Image.open(image_file)
+
+                #img = img.convert("RGB")
                 # Convert image to numpy array
                 img_array = np.array(img)
                 
                 # Append the image and its label
                 images.append(img_array)
-                labels.append(folder_label)
+                labels.append(classes[folder_label])
             except Exception as e:
                 print(f"Could not process image {image_file}: {e}")
     
     return images, labels
 
-# Define the base folder path
-base_folder = 'training_tiles'
-
 # Call the function
-images, labels = load_images_from_folders(base_folder)
+images, labels = load_images_from_folders()
 
 # Now `images` holds all the image arrays, and `labels` holds corresponding folder labels
 print(f"Loaded {len(images)} images with {len(set(labels))} unique labels.")
@@ -87,10 +151,14 @@ model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(512, activation='relu'))
 #model.add(Dropout(0.5))
-model.add(Dense(len(np.unique(labels)), activation='softmax'))
+model.add(Dense(num_classes, activation='softmax'))
 
-# Step 6: Compile the model
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+opt = keras.optimizers.RMSprop(learning_rate=0.0001, weight_decay=1e-6)
+
+model.compile(loss='categorical_crossentropy',
+            optimizer=opt,
+            metrics=['accuracy'])
+print(model.summary())
 
 # Step 7: Train the model
 history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))

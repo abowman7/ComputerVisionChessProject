@@ -193,15 +193,12 @@ model.add(Dense(512, activation='relu'))
 #model.add(Dropout(0.5))
 model.add(Dense(num_classes, activation='softmax'))
 
-opt = keras.optimizers.RMSprop(learning_rate=0.0001, weight_decay=1e-6)
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-model.compile(loss='categorical_crossentropy',
-            optimizer=opt,
-            metrics=['accuracy'])
 print(model.summary())
 
 # Step 7: Train the model
-history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
 
 predictions = model.predict(X_test)  # Get the predicted probabilities
 for i in range(len(predictions)):

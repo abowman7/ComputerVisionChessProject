@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow import keras
 from keras import optimizers
+from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, Activation
@@ -78,7 +79,7 @@ classes = {
     "empty_black_space": 25,
 }
 
-def load_data():
+def load_images_from_folders():
     images = []
     labels = []
     
@@ -93,14 +94,20 @@ def load_data():
         
         # Get all image files (you can modify the extension as needed)
         image_files = glob.glob(os.path.join(root, '*.png')) + glob.glob(os.path.join(root, '*.jpg')) + glob.glob(os.path.join(root, '*.jpeg'))
+        
+        image_files = np.array(image_files)
+        np.random.shuffle(image_files)
+
+        # ratio = 0.9
+        # split = int(len(image_files) * ratio)
 
         # Loop through each image file and load it
         for image_file in image_files:
             try:
-                # Open the image using Pillow
+              # Open the image using Pillow
                 img = Image.open(image_file)
 
-                img = image.convert("RGB")
+                #img = img.convert("gray")
                 # Convert image to numpy array
                 img_array = np.array(img)
                 
@@ -112,91 +119,94 @@ def load_data():
     
     return images, labels
 
+# Call the function
+images, labels = load_images_from_folders()
 
-def cnn():
-    model = Sequential()
+# Now `images` holds all the image arrays, and `labels` holds corresponding folder labels
+print(f"Loaded {len(images)} images with {len(set(labels))} unique labels.")
+# for label in labels:
+#     print(label)
+# for image in images:
+#     plt.imshow(image)
+#     plt.show()
 
-    model.add(Conv2D(16, (3,3), padding='same', input_shape=(64,64,3)))
-    model.add(Activation('relu'))
-    model.add(Conv2D(16, (3,3), padding='same'))
-    model.add(Activation('relu'))
-    
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+# Normalize pixel values to range [0, 1]
+images = np.array(images).astype('float32') / 255.0
 
-    model.add(Conv2D(32, (3, 3), padding='same'))
-    model.add(Activation('relu'))
-    model.add(Conv2D(32, (3, 3), padding='same'))
-    model.add(Activation('relu'))
+# Step 3: Encode labels
+label_encoder = LabelEncoder()
+labels_encoded = label_encoder.fit_transform(labels)
+labels_one_hot = to_categorical(labels_encoded)
 
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+# Step 4: Split data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(images, labels_one_hot, test_size=0.2, random_state=42)
 
-    model.add(Flatten())
-    model.add(Dense(512))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+# Step 5: Build a simple CNN model
+model = Sequential()
 
-    model.add(Dense(num_classes))
-    model.add(Activation('softmax'))
+# Add more convolutional layers to capture more complex features
+model.add(Conv2D(64, (3, 3), padding='same', activation='relu', input_shape=(32, 32, 1)))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    opt = keras.optimizers.RMSprop(learning_rate=0.0001, weight_decay=1e-6)
+model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.compile(loss='categorical_crossentropy',
-                optimizer=opt,
-                metrics=['accuracy'])
-    print(model.summary())
+model.add(Conv2D(256, (3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    return model
+model.add(Flatten())
+model.add(Dense(512, activation='relu'))
+#model.add(Dropout(0.5))
+model.add(Dense(num_classes, activation='softmax'))
 
-def train_model():
-    history_activations = dict()
+opt = keras.optimizers.RMSprop(learning_rate=0.0001, weight_decay=1e-6)
 
-    model = cnn()
-    
-    images, labels = load_data()
-    x_train = np.array(images)
-    y_train = np.array(labels)
-    # labels = to_categorical(labels, num_classes)
-    # images = np.array(images).astype('float32') / 255.0
-    # X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.2, random_state=42)
+model.compile(loss='categorical_crossentropy',
+            optimizer=opt,
+            metrics=['accuracy'])
+print(model.summary())
 
-    # Convert class vectors to binary class matrices.
-    y_train = to_categorical(y_train, num_classes)
-    #y_test = to_categorical(y_test, num_classes)
-    # normalize the data
-    x_train = x_train.astype('float32')
-    #x_test = x_test.astype('float32')
-    x_train /= 255
-    #x_test /= 255
-    save_best_model = ModelCheckpoint('best_model.keras', monitor='val_accuracy', mode='max', save_best_only=True, verbose=1)
-  
+# Step 7: Train the model
+history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
 
-    history_activations[activation] = model.fit(x_train, y_train,
-                                              batch_size=32,
-                                              epochs=10,
-                                              validation_data=(x_train, y_train),
-                                              shuffle=True,
-                                              callbacks=[save_best_model])
+predictions = model.predict(X_test)  # Get the predicted probabilities
+for i in range(len(predictions)):
+    print("=============")
+    print("Real Label: ", y_test[i], " - ", np.argmax(y_test[i]))
+    print("Predicted: ", predictions[i], " - ", np.argmax(predictions[i]))
+    plt.imshow(X_test[i])
+    plt.show()
 
-    predictions = model.predict(X_test)  # Get the predicted probabilities
-    for i in range(len(predictions)):
-        print("=============")
-        print("Real Label: ", y_test[i], " - ", np.argmax(y_test[i]))
-        print("Predicted: ", predictions[i], " - ", np.argmax(predictions[i]))
-        plt.imshow(X_test[i])
-        plt.show()
+# Step 8: Evaluate the model
+loss, accuracy = model.evaluate(X_test, y_test)
 
-    # Step 8: Evaluate the model
-    loss, accuracy = model.evaluate(X_test, y_test)
+print(f"Test accuracy: {accuracy * 100:.2f}%")
 
-    print(f"Test accuracy: {accuracy * 100:.2f}%")
+# Optionally, plot training history
+plt.plot(history.history['accuracy'], label='accuracy')
+plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend(loc='lower right')
+#plt.show()
 
-    # Optionally, plot training history
-    plt.plot(history.history['accuracy'], label='accuracy')
-    plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.legend(loc='lower right')
+# # Load the pre-trained VGG16 model (without the top classification layers)
+# base_model = VGG16(weights='imagenet', include_top=False, input_shape=(32, 32, 1))
 
-train_model()
+# # Freeze the base model layers so they are not trained
+# base_model.trainable = False
+
+# # Add custom layers for chess piece classification
+# x = Flatten()(base_model.output)
+# x = Dense(128, activation='relu')(x)
+# x = Dropout(0.5)(x)
+# x = Dense(len(np.unique(labels)), activation='softmax')(x)  # Number of classes equals the number of unique chess pieces
+
+# # Define the model
+# model = Model(inputs=base_model.input, outputs=x)
+
+# # Compile the model
+# model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
+
+# # Train the model
+# history = model.fit(datagen.flow(X_train, y_train, batch_size=32), epochs=10, validation_data=(X_test, y_test))

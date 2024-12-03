@@ -27,8 +27,8 @@ classifications = [
     "white_bishop_white_space", #7
     "white_bishop_black_space", #8
     "white_queen_white_space", #9
-    #"white_queen_black_space", #10
-    #"white_king_white_space", #11
+    "white_queen_black_space", #10
+    "white_king_white_space", #11
     "white_king_black_space", #12
     
     "black_pawn_white_space", #13
@@ -39,7 +39,7 @@ classifications = [
     "black_knight_black_space", #17
     "black_bishop_white_space", #18
     "black_bishop_black_space", #20
-    #"black_queen_white_space", #21
+    "black_queen_white_space", #21
     "black_queen_black_space", #22
     "black_king_white_space", #23
     "black_king_black_space", #24
@@ -94,6 +94,12 @@ def load_images_from_folders():
         
         # Get all image files (you can modify the extension as needed)
         image_files = glob.glob(os.path.join(root, '*.png')) + glob.glob(os.path.join(root, '*.jpg')) + glob.glob(os.path.join(root, '*.jpeg'))
+        
+        image_files = np.array(image_files)
+        np.random.shuffle(image_files)
+
+        # ratio = 0.9
+        # split = int(len(image_files) * ratio)
 
         # Loop through each image file and load it
         for image_file in image_files:
@@ -101,7 +107,7 @@ def load_images_from_folders():
               # Open the image using Pillow
                 img = Image.open(image_file)
 
-                #img = img.convert("RGB")
+                #img = img.convert("gray")
                 # Convert image to numpy array
                 img_array = np.array(img)
                 
@@ -139,10 +145,10 @@ X_train, X_test, y_train, y_test = train_test_split(images, labels_one_hot, test
 model = Sequential()
 
 # Add more convolutional layers to capture more complex features
-model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(32, 32, 1)))
+model.add(Conv2D(64, (3, 3), padding='same', activation='relu', input_shape=(32, 32, 1)))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Conv2D(128, (3, 3), activation='relu'))
+model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
 model.add(Conv2D(256, (3, 3), activation='relu'))

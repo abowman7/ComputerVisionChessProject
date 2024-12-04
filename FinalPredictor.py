@@ -32,7 +32,9 @@ def showImage(a, fmt='jpeg', rng=[0,1]):
   PIL.Image.fromarray(a).show()
 
 #input file Here:
-img_file = 'Game7.jpeg'
+#img_file = 'Game7.jpeg'
+img_file = input('Path to input image: ')
+turn = input('Which players turn? (w/b): ')
 img = PIL.Image.open(f"input_boards/{img_file}")
 
 #convert from png to jpg if png
@@ -248,6 +250,6 @@ for i in range(8):
 
 #this is an example array for now, replace with generated array later
 #boardArray = [[8,9,10,11,12,10,9,8],[7,7,7,7,7,7,7,7],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1],[2,3,4,5,6,4,3,2]]
-turn = 'w' #allow this to be selected as a user controlled input variable
+#turn = 'w' #allow this to be selected as a user controlled input variable
 move = generateMove(board_array, turn)
 print(move)

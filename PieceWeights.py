@@ -153,73 +153,75 @@ def load_images_from_folders():
     
     return images, labels
 
-# Call the function
-images, labels = load_images_from_folders()
+def train_cnn():
+    # Call the function
+    images, labels = load_images_from_folders()
 
-# Now `images` holds all the image arrays, and `labels` holds corresponding folder labels
-print(f"Loaded {len(images)} images with {len(set(labels))} unique labels.")
-# for label in labels:
-#     print(label)
-# for image in images:
-#     plt.imshow(image)
-#     plt.show()
+    # Now `images` holds all the image arrays, and `labels` holds corresponding folder labels
+    print(f"Loaded {len(images)} images with {len(set(labels))} unique labels.")
+    # for label in labels:
+    #     print(label)
+    # for image in images:
+    #     plt.imshow(image)
+    #     plt.show()
 
-# Normalize pixel values to range [0, 1]
-images = np.array(images).astype('float32') / 255.0
+    # Normalize pixel values to range [0, 1]
+    images = np.array(images).astype('float32') / 255.0
 
-# Step 3: Encode labels
-label_encoder = LabelEncoder()
-labels_encoded = label_encoder.fit_transform(labels)
-labels_one_hot = to_categorical(labels_encoded)
+    # Step 3: Encode labels
+    label_encoder = LabelEncoder()
+    labels_encoded = label_encoder.fit_transform(labels)
+    labels_one_hot = to_categorical(labels_encoded)
 
-# Step 4: Split data into training and test sets
-X_train, X_test, y_train, y_test = train_test_split(images, labels_one_hot, test_size=0.2, random_state=42)
+    # Step 4: Split data into training and test sets
+    X_train, X_test, y_train, y_test = train_test_split(images, labels_one_hot, test_size=0.2, random_state=42)
 
-# Step 5: Build a simple CNN model
-model = Sequential()
+    # Step 5: Build a simple CNN model
+    model = Sequential()
 
-# Add more convolutional layers to capture more complex features
-model.add(Conv2D(64, (3, 3), padding='same', activation='relu', input_shape=(32, 32, 1)))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+    # Add more convolutional layers to capture more complex features
+    model.add(Conv2D(64, (3, 3), padding='same', activation='relu', input_shape=(32, 32, 1)))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Flatten())
-model.add(Dense(512, activation='relu'))
-#model.add(Dropout(0.5))
-model.add(Dense(num_classes, activation='softmax'))
+    model.add(Flatten())
+    model.add(Dense(512, activation='relu'))
+    #model.add(Dropout(0.5))
+    model.add(Dense(num_classes, activation='softmax'))
 
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-print(model.summary())
+    print(model.summary())
 
-# Step 7: Train the model
-history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
+    # Step 7: Train the model
+    history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
 
-predictions = model.predict(X_test)  # Get the predicted probabilities
-for i in range(len(predictions)):
-    print("=============")
-    print("Real Label: ", y_test[i], " - ", np.argmax(y_test[i]))
-    print("Predicted: ", predictions[i], " - ", np.argmax(predictions[i]))
-    plt.imshow(X_test[i])
-    plt.show()
+    predictions = model.predict(X_test)  # Get the predicted probabilities
+    # for i in range(len(predictions)):
+    #     print("=============")
+    #     print("Real Label: ", y_test[i], " - ", np.argmax(y_test[i]))
+    #     print("Predicted: ", predictions[i], " - ", np.argmax(predictions[i]))
+    #     plt.imshow(X_test[i])
+    #     plt.show()
 
-# Step 8: Evaluate the model
-loss, accuracy = model.evaluate(X_test, y_test)
+    # Step 8: Evaluate the model
+    loss, accuracy = model.evaluate(X_test, y_test)
 
-print(f"Test accuracy: {accuracy * 100:.2f}%")
+    print(f"Test accuracy: {accuracy * 100:.2f}%")
 
-# Optionally, plot training history
-plt.plot(history.history['accuracy'], label='accuracy')
-plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.legend(loc='lower right')
-#plt.show()
+    # Optionally, plot training history
+    plt.plot(history.history['accuracy'], label='accuracy')
+    plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend(loc='lower right')
+    return predictions
+    #plt.show()
 
 # # Load the pre-trained VGG16 model (without the top classification layers)
 # base_model = VGG16(weights='imagenet', include_top=False, input_shape=(32, 32, 1))

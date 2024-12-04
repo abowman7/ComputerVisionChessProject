@@ -234,10 +234,11 @@ test_predictions = train_model(model, ima, labes)
 
 predictions = model.predict(tiles)
 
-tiles_labels = np.zeros((64))
+board_array = np.zeros((8,8))
 
-for i in range(len(predictions)):
-    tiles_labels[i] = np.argmax(predictions[i])
+for i in range(8):
+    for j in range(8):
+        board_array[7-i][j] = np.argmax(predictions[i*8+j])
 
 
 #tiles index goes A1, B1, C1, D1, E1, F1, H1, A2, B2, ...
@@ -246,7 +247,7 @@ for i in range(len(predictions)):
 # 7 - W Bishop, 8 - W King, 9 - W Knight, 10 - W Pawn, 11 - W Queen, 12 - W Rook
 
 #this is an example array for now, replace with generated array later
-boardArray = [[8,9,10,11,12,10,9,8],[7,7,7,7,7,7,7,7],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1],[2,3,4,5,6,4,3,2]]
+#boardArray = [[8,9,10,11,12,10,9,8],[7,7,7,7,7,7,7,7],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1],[2,3,4,5,6,4,3,2]]
 turn = 'w' #allow this to be selected as a user controlled input variable
-move = generateMove(boardArray, turn)
+move = generateMove(board_array, turn)
 print(move)

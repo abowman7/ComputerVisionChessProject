@@ -180,16 +180,16 @@ def sliceTiles(a, vertLines, horLines):
             leftYPad = 0
 
             # vertical line bounds
-            x1 = setsx[7-i]
-            x2 = setsx[7-i+1]
+            x1 = setsx[i]
+            x2 = setsx[i+1]
 
             if (x2-x1) > xsize:
-                if i == 0:
+                if i == 7:
                     x1 = x2 - xsize
                 else:
                     x2 = x1 + xsize
             elif (x2-x1) < xsize:
-                if i == 0:
+                if i == 7:
                     # assign pad
                     rightXPad = xsize-(x2-x1)
                 else:
@@ -213,7 +213,7 @@ def sliceTiles(a, vertLines, horLines):
                     leftYPad = ysize-(y2-y1)
             # slicing a, rows sliced with horizontal lines, cols by vertical lines so reversed
             # change order so its A1,B1...H8 for a white-aligned board
-            tiles[:,:,(7-j)*8+(7-i)] = np.pad(a2[y1:y2, x1:x2],((leftYPad,rightYPad),(leftXPad,rightXPad)), mode='edge')
+            tiles[:,:,(7-j)*8+i] = np.pad(a2[y1:y2, x1:x2],((leftYPad,rightYPad),(leftXPad,rightXPad)), mode='edge')
     return tiles
 
 
@@ -308,12 +308,29 @@ ima, labes = load_images_from_folders(base_folder)
 model = cnn()
 test_predictions = train_model(model, ima, labes)
 
-predictions = model.predict()
+predictions = model.predict(tiles)
 
 tiles_labels = np.zeros(tiles.shape)
 
 for i in range(len(predictions)):
     tiles_labels[i] = np.argmax(predictions[i])
+
+tempTiles = []
+templabels = []
+for i in range(8):
+    tempTiles.append([tiles[:,:,(i8):(i8)+7]])
+    templabels.append([tiles_labels[i8:i8+7]])
+
+tempTiles.reverse()
+templabels.reverse()
+tempT2 = []
+tempL2 = []
+for i in range(8):
+    for j in range(8):
+        tempT2.append(tempTiles[i][j])
+        tempL2.append(templabels[i][j])
+tiles = tempT2
+tiles_labels = tempL2
 
 #tiles index goes A1, B1, C1, D1, E1, F1, H1, A2, B2, ...
 # Index to piece label Cheat Sheet:

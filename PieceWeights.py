@@ -139,8 +139,10 @@ def train_model(model, images, labels):
     # Step 4: Split data into training and test sets
     X_train, X_test, y_train, y_test = train_test_split(images, labels_one_hot, test_size=0.2, random_state=42)
    
+    save_best_model = ModelCheckpoint('best_model.keras', monitor='val_accuracy', mode='max', save_best_only=True, verbose=1)
+    
     # Step 7: Train the model
-    history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
+    history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test), callbacks=[save_best_model])
 
     predictions = model.predict(X_test)  # Get the predicted probabilities
     # for i in range(len(predictions)):

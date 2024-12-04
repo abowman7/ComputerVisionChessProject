@@ -113,11 +113,10 @@ classes = {
 }
 
 
-def load_images_from_folders():
+def load_images_from_folders(path):
     images = []
     labels = []
     
-    path = "./training_tiles"
     for root, dirs, files in os.walk(path):
         # Skip the base folder itself, only process subfolders
         if root == path:
@@ -153,29 +152,7 @@ def load_images_from_folders():
     
     return images, labels
 
-def train_cnn():
-    # Call the function
-    images, labels = load_images_from_folders()
-
-    # Now `images` holds all the image arrays, and `labels` holds corresponding folder labels
-    print(f"Loaded {len(images)} images with {len(set(labels))} unique labels.")
-    # for label in labels:
-    #     print(label)
-    # for image in images:
-    #     plt.imshow(image)
-    #     plt.show()
-
-    # Normalize pixel values to range [0, 1]
-    images = np.array(images).astype('float32') / 255.0
-
-    # Step 3: Encode labels
-    label_encoder = LabelEncoder()
-    labels_encoded = label_encoder.fit_transform(labels)
-    labels_one_hot = to_categorical(labels_encoded)
-
-    # Step 4: Split data into training and test sets
-    X_train, X_test, y_train, y_test = train_test_split(images, labels_one_hot, test_size=0.2, random_state=42)
-
+def cnn():
     # Step 5: Build a simple CNN model
     model = Sequential()
 
@@ -198,6 +175,29 @@ def train_cnn():
 
     print(model.summary())
 
+    return model
+
+def train_model(model, images, labels):
+
+    # Now `images` holds all the image arrays, and `labels` holds corresponding folder labels
+    print(f"Loaded {len(images)} images with {len(set(labels))} unique labels.")
+    # for label in labels:
+    #     print(label)
+    # for image in images:
+    #     plt.imshow(image)
+    #     plt.show()
+
+    # Normalize pixel values to range [0, 1]
+    images = np.array(images).astype('float32') / 255.0
+
+    # Step 3: Encode labels
+    label_encoder = LabelEncoder()
+    labels_encoded = label_encoder.fit_transform(labels)
+    labels_one_hot = to_categorical(labels_encoded)
+
+    # Step 4: Split data into training and test sets
+    X_train, X_test, y_train, y_test = train_test_split(images, labels_one_hot, test_size=0.2, random_state=42)
+   
     # Step 7: Train the model
     history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
 
@@ -220,26 +220,6 @@ def train_cnn():
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.legend(loc='lower right')
+
     return predictions
     #plt.show()
-
-# # Load the pre-trained VGG16 model (without the top classification layers)
-# base_model = VGG16(weights='imagenet', include_top=False, input_shape=(32, 32, 1))
-
-# # Freeze the base model layers so they are not trained
-# base_model.trainable = False
-
-# # Add custom layers for chess piece classification
-# x = Flatten()(base_model.output)
-# x = Dense(128, activation='relu')(x)
-# x = Dropout(0.5)(x)
-# x = Dense(len(np.unique(labels)), activation='softmax')(x)  # Number of classes equals the number of unique chess pieces
-
-# # Define the model
-# model = Model(inputs=base_model.input, outputs=x)
-
-# # Compile the model
-# model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
-
-# # Train the model
-# history = model.fit(datagen.flow(X_train, y_train, batch_size=32), epochs=10, validation_data=(X_test, y_test))

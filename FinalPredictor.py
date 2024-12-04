@@ -180,16 +180,16 @@ def sliceTiles(a, vertLines, horLines):
             leftYPad = 0
 
             # vertical line bounds
-            x1 = setsx[i]
-            x2 = setsx[i+1]
+            x1 = setsx[7-i]
+            x2 = setsx[7-i+1]
 
             if (x2-x1) > xsize:
-                if i == 7:
+                if i == 0:
                     x1 = x2 - xsize
                 else:
                     x2 = x1 + xsize
             elif (x2-x1) < xsize:
-                if i == 7:
+                if i == 0:
                     # assign pad
                     rightXPad = xsize-(x2-x1)
                 else:
@@ -213,7 +213,7 @@ def sliceTiles(a, vertLines, horLines):
                     leftYPad = ysize-(y2-y1)
             # slicing a, rows sliced with horizontal lines, cols by vertical lines so reversed
             # change order so its A1,B1...H8 for a white-aligned board
-            tiles[:,:,(7-j)*8+i] = np.pad(a2[y1:y2, x1:x2],((leftYPad,rightYPad),(leftXPad,rightXPad)), mode='edge')
+            tiles[:,:,(7-j)*8+(7-i)] = np.pad(a2[y1:y2, x1:x2],((leftYPad,rightYPad),(leftXPad,rightXPad)), mode='edge')
     return tiles
 
 
@@ -306,7 +306,9 @@ predictions = model.predict(tiles)  # Get the predicted probabilities"""
 base_folder = 'training_tiles'
 ima, labes = load_images_from_folders(base_folder)
 model = cnn()
-predictions = train_model(model, ima, labes)
+test_predictions = train_model(model, ima, labes)
+
+predictions = model.predict()
 
 tiles_labels = np.zeros(tiles.shape)
 

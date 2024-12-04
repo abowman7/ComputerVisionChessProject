@@ -97,19 +97,19 @@ classifications = [
 num_classes = len(classifications)
 
 classes = {
-    "BlackBishops": 1,
-    "BlackKings": 2,
-    "BlackKnights": 3,
-    "BlackPawns": 4,
-    "BlackQueens": 5,
-    "BlackRooks": 6,
-    "BlankTiles": 7,
-    "WhiteBishops": 8,
-    "WhiteKings": 9,
-    "WhiteKnights": 10,
-    "WhitePawns": 11,
-    "WhiteQueens": 12,
-    "WhiteRooks": 13
+    "BlackBishops": 10,
+    "BlackKings": 12,
+    "BlackKnights": 9,
+    "BlackPawns": 7,
+    "BlackQueens": 11,
+    "BlackRooks": 8,
+    "BlankTiles": 0,
+    "WhiteBishops": 4,
+    "WhiteKings": 6,
+    "WhiteKnights": 3,
+    "WhitePawns": 1,
+    "WhiteQueens": 5,
+    "WhiteRooks": 2
 }
 
 

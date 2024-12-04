@@ -15,6 +15,7 @@
 from stockfish import Stockfish
 
 def generateMove(boardArray, turn):
+    turn = turn.lower()
     fenString = ""
     openSpaces = 0
     isOpen = False
@@ -102,5 +103,5 @@ def generateMove(boardArray, turn):
 
 #this array represents the starting position of the chess
 exampleArray = [[8,9,10,11,12,10,9,8],[7,7,7,7,7,7,7,7],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1],[2,3,4,5,6,4,3,2]]
-outp = generateMove(exampleArray, 'w')
+outp = generateMove(exampleArray, 'W')
 print(outp)#should print e2e4

@@ -313,4 +313,9 @@ for i in range(len(predictions)):
 # Index to piece label Cheat Sheet:
 # 0 - B Bishop, 1 - B King, 2 - B Knight, 3 - B Pawn, 4 - B Queen, 5 - B Rook, 6 = Blank Tile
 # 7 - W Bishop, 8 - W King, 9 - W Knight, 10 - W Pawn, 11 - W Queen, 12 - W Rook
-#move = generateMove
+
+#this is an example array for now, replace with generated array later
+boardArray = [[8,9,10,11,12,10,9,8],[7,7,7,7,7,7,7,7],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1],[2,3,4,5,6,4,3,2]]
+turn = 'w' #allow this to be selected as a user controlled input variable
+move = generateMove(boardArray, turn)
+print(move)

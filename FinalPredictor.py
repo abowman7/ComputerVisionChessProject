@@ -252,10 +252,7 @@ tiles = sliceTiles(a, vertLines, horLines)
             except Exception as e:
                 print(f"Could not process image {image_file}: {e}")
     
-    return images, labels"""
-
-# Define the base folder path
-base_folder = 'training_tiles'
+    return images, labels
 
 # Call the function
 images, labels = load_images_from_folders(base_folder)
@@ -280,7 +277,7 @@ labels_one_hot = to_categorical(labels_encoded)
 #X_train, X_test, y_train, y_test = train_test_split(images, labels_one_hot, test_size=0.2, random_state=42)
 
 # Step 5: Build a simple CNN model
-"""model = Sequential()
+model = Sequential()
 
 # Add more convolutional layers to capture more complex features
 model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(32, 32, 1)))
@@ -304,6 +301,9 @@ model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accur
 history = model.fit(images, labels_one_hot, epochs=10, batch_size=32)
 
 predictions = model.predict(tiles)  # Get the predicted probabilities"""
+
+# Define the base folder path
+base_folder = 'training_tiles'
 ima, labes = load_images_from_folders(base_folder)
 model = cnn()
 predictions = train_model(model, ima, labes)

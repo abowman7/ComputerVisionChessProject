@@ -224,7 +224,8 @@ def train_model(model, images, labels):
     return predictions
     #plt.show()
 
-images, labels = load_images_from_folders("training_tiles/")
-model = cnn()
-preds = train_model(model, images, labels)
-preds1 = train_model(model, images, labels)
+def cnn_testing():
+    images, labels = load_images_from_folders("training_tiles/")
+    model = cnn()
+    preds = train_model(model, images, labels)
+    preds1 = train_model(model, images, labels)

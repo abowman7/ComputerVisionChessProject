@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 from keras import optimizers
 from sklearn.preprocessing import LabelEncoder
-from tensorflow import sequential, save_model
+#from tensorflow import sequential, save_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, Activation
@@ -143,7 +143,7 @@ def train_model(model, images, labels):
     save_best_model = ModelCheckpoint('best_model.keras', monitor='val_accuracy', mode='max', save_best_only=True, verbose=1)
     
     # Step 7: Train the model
-    history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
+    history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test), callbacks=[save_best_model])
 
     predictions = model.predict(X_test)  # Get the predicted probabilities
     # for i in range(len(predictions)):
@@ -154,7 +154,7 @@ def train_model(model, images, labels):
     #     plt.show()
 
     # Step 8: Evaluate the model
-    loss, accuracy = model.evaluate(X_test, y_test, callbacks=[save_best_model])
+    loss, accuracy = model.evaluate(X_test, y_test)
 
     print(f"Test accuracy: {accuracy * 100:.2f}%")
 
@@ -172,4 +172,4 @@ def cnn_testing():
     images, labels = load_images_from_folders("training_tiles/")
     model = cnn()
     preds = train_model(model, images, labels)
-#cnn_testing()
+cnn_testing()

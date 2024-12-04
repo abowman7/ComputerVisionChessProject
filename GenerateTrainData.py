@@ -1,4 +1,6 @@
 import urllib.request
+import requests
+import platform
 import numpy as np
 import os
 import PIL
@@ -7,6 +9,7 @@ from IPython.display import clear_output, Image, display
 import io
 import urllib
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 import time
 import matplotlib.pyplot as plt
 from GradientFuncs import gradientx, gradienty
@@ -20,43 +23,50 @@ def getRandomFEN():
     # can append ' w' or ' b' for white/black to play, defaults to white
     return fen
 
-#tiles list format is A1,B1...G8, H8
-#A8B8c8d8.../a7b7c7d7.../a6b6c6.../...
 FEN = getRandomFEN()
 print(FEN)
 # Set up URL and output image filename for this run
 url = "http://en.lichess.org/editor/%s" % FEN
 output_filename = "randfens/randfenA.png"
 
-# Set up the Chrome driver
-options = webdriver.EdgeOptions()
-driver = webdriver.Edge(options = options)
+if not os.path.exists("./randfens/"):  
+    os.makedirs("randfens/") 
+
+if platform.system() == "Windows":
+    options = webdriver.EdgeOptions()
+    driver = webdriver.Edge(options = options)
+elif platform.system() == "Linux": #I use linux
+    options = webdriver.FirefoxOptions()
+    driver = webdriver.Firefox(options = options)
 
 # Open the webpage
-driver.get(url)  # Replace with your desired URL
+driver.get(url)
 
-time.sleep(2)  # You can adjust this based on your network speed or page complexity
+time.sleep(2)
 
-# Take screenshot
-driver.save_screenshot(output_filename)
+link_element = driver.find_element(By.XPATH, '//a[text()="SCREENSHOT"]')  # Match the link text
+file_url = link_element.get_attribute('href')
 
-# Close the browser
+if file_url:
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        with open(output_filename, 'wb') as file:
+            file.write(response.content)
+        print('File downloaded successfully!')
+    else:
+        print(f'Failed to download the file. HTTP status code: {response.status_code}')
+else:
+    print('No valid href found.')
+
 driver.quit()
 
 img = PIL.Image.open(output_filename)
-#fix crop to your device
-img = img.crop([35,135,560,655])
-
 #comment this out when you know it works to run quicker
+
 plt.imshow(img)
 plt.show()
 
-#before testing new crop, comment out everything below this line
-
-# turn to grayscale image
 a = np.asarray(img.convert("L"), dtype=np.float32)
-
-
 #gradient x to help get vertical grid for chess board
 grad_x = gradientx(a)
 #gradient y to help get horizontal grid for chess board
@@ -272,4 +282,5 @@ for row in multiFENs:
             .save(sqr_filename) 
         count += 1
     
-    
+
+

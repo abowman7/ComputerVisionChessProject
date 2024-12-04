@@ -102,6 +102,6 @@ def generateMove(boardArray, turn):
 #print(move) #should print d2d4
 
 #this array represents the starting position of the chess
-exampleArray = [[8,9,10,11,12,10,9,8],[7,7,7,7,7,7,7,7],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1],[2,3,4,5,6,4,3,2]]
-outp = generateMove(exampleArray, 'W')
-print(outp)#should print e2e4
+#exampleArray = [[8,9,10,11,12,10,9,8],[7,7,7,7,7,7,7,7],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1],[2,3,4,5,6,4,3,2]]
+#outp = generateMove(exampleArray, 'W')
+#print(outp)#should print e2e4

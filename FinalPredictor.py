@@ -8,6 +8,7 @@ from IPython.display import clear_output, Image, display
 import scipy.ndimage as nd
 import scipy.signal
 from movePredictor import generateMove
+from PieceWeights import load_images_from_folders, cnn, train_model
 import os
 import glob
 from PIL import Image
@@ -220,7 +221,7 @@ tiles = sliceTiles(a, vertLines, horLines)
 
 
 
-def load_images_from_folders(base_folder):
+"""def load_images_from_folders(base_folder):
     # Initialize lists to hold images and their labels
     images = []
     labels = []
@@ -251,7 +252,7 @@ def load_images_from_folders(base_folder):
             except Exception as e:
                 print(f"Could not process image {image_file}: {e}")
     
-    return images, labels
+    return images, labels"""
 
 # Define the base folder path
 base_folder = 'training_tiles'
@@ -279,7 +280,7 @@ labels_one_hot = to_categorical(labels_encoded)
 #X_train, X_test, y_train, y_test = train_test_split(images, labels_one_hot, test_size=0.2, random_state=42)
 
 # Step 5: Build a simple CNN model
-model = Sequential()
+"""model = Sequential()
 
 # Add more convolutional layers to capture more complex features
 model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(32, 32, 1)))
@@ -302,7 +303,10 @@ model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accur
 # Step 7: Train the model
 history = model.fit(images, labels_one_hot, epochs=10, batch_size=32)
 
-predictions = model.predict(tiles)  # Get the predicted probabilities
+predictions = model.predict(tiles)  # Get the predicted probabilities"""
+ima, labes = load_images_from_folders(base_folder)
+model = cnn()
+predictions = train_model(model, ima, labes)
 
 tiles_labels = np.zeros(tiles.shape)
 

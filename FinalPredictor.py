@@ -168,7 +168,7 @@ def sliceTiles(a, vertLines, horLines):
     
     # tiles holds each chessboard square
     #     print "Square size: [%g, %g]" % (ysize, xsize)
-    tiles = np.zeros([np.round(ysize), np.round(xsize), 64],dtype=np.uint8)
+    tiles = np.zeros([np.round(ysize), np.round(xsize), 64,1],dtype=np.uint8)
     
     # each row 1-8
     for i in range(0,8):
@@ -213,94 +213,18 @@ def sliceTiles(a, vertLines, horLines):
                     leftYPad = ysize-(y2-y1)
             # slicing a, rows sliced with horizontal lines, cols by vertical lines so reversed
             # change order so its A1,B1...H8 for a white-aligned board
-            tiles[:,:,(7-j)*8+i] = np.pad(a2[y1:y2, x1:x2],((leftYPad,rightYPad),(leftXPad,rightXPad)), mode='edge')
+            tiles[:,:,(7-j)*8+i,0] = np.pad(a2[y1:y2, x1:x2],((leftYPad,rightYPad),(leftXPad,rightXPad)), mode='edge')
     return tiles
 
 
 tiles = sliceTiles(a, vertLines, horLines)
 
-
-
-"""def load_images_from_folders(base_folder):
-    # Initialize lists to hold images and their labels
-    images = []
-    labels = []
+ttiles = np.array([np.asarray(PIL.Image.fromarray(tiles[:,:,0,0]).resize([32,32], PIL.Image.ADAPTIVE))])
+for i in range(1,64):
+    ttiles = np.append(ttiles, [np.asarray(PIL.Image.fromarray(tiles[:,:,i,0]).resize([32,32], PIL.Image.ADAPTIVE))], axis=0)
     
-    # Loop through each folder in the base folder
-    for root, dirs, files in os.walk(base_folder):
-        # Skip the base folder itself, only process subfolders
-        if root == base_folder:
-            continue
-        
-        # Extract the label from the folder name (this will be the folder name itself)
-        folder_label = os.path.basename(root)
-        
-        # Get all image files (you can modify the extension as needed)
-        image_files = glob.glob(os.path.join(root, '*.png')) + glob.glob(os.path.join(root, '*.jpg')) + glob.glob(os.path.join(root, '*.jpeg'))
+tiles = ttiles
 
-        # Loop through each image file and load it
-        for image_file in image_files:
-            try:
-                # Open the image using Pillow
-                img = Image.open(image_file)
-                # Convert image to numpy array
-                img_array = np.array(img)
-                
-                # Append the image and its label
-                images.append(img_array)
-                labels.append(folder_label)
-            except Exception as e:
-                print(f"Could not process image {image_file}: {e}")
-    
-    return images, labels
-
-# Call the function
-images, labels = load_images_from_folders(base_folder)
-
-# Now `images` holds all the image arrays, and `labels` holds corresponding folder labels
-#print(f"Loaded {len(images)} images with {len(set(labels))} unique labels.")
-# for label in labels:
-#     print(label)
-# for image in images:
-#     plt.imshow(image)
-#     plt.show()
-
-# Normalize pixel values to range [0, 1]
-images = np.array(images).astype('float32') / 255.0
-
-# Step 3: Encode labels
-label_encoder = LabelEncoder()
-labels_encoded = label_encoder.fit_transform(labels)
-labels_one_hot = to_categorical(labels_encoded)
-
-# Step 4: Split data into training and test sets
-#X_train, X_test, y_train, y_test = train_test_split(images, labels_one_hot, test_size=0.2, random_state=42)
-
-# Step 5: Build a simple CNN model
-model = Sequential()
-
-# Add more convolutional layers to capture more complex features
-model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(32, 32, 1)))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-
-model.add(Conv2D(128, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-
-model.add(Conv2D(256, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-
-model.add(Flatten())
-model.add(Dense(512, activation='relu'))
-#model.add(Dropout(0.5))
-model.add(Dense(len(np.unique(labels)), activation='softmax'))
-
-# Step 6: Compile the model
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-# Step 7: Train the model
-history = model.fit(images, labels_one_hot, epochs=10, batch_size=32)
-
-predictions = model.predict(tiles)  # Get the predicted probabilities"""
 
 # Define the base folder path
 base_folder = 'training_tiles'
@@ -310,27 +234,11 @@ test_predictions = train_model(model, ima, labes)
 
 predictions = model.predict(tiles)
 
-tiles_labels = np.zeros(tiles.shape)
+tiles_labels = np.zeros((64))
 
 for i in range(len(predictions)):
     tiles_labels[i] = np.argmax(predictions[i])
 
-tempTiles = []
-templabels = []
-for i in range(8):
-    tempTiles.append([tiles[:,:,(i8):(i8)+7]])
-    templabels.append([tiles_labels[i8:i8+7]])
-
-tempTiles.reverse()
-templabels.reverse()
-tempT2 = []
-tempL2 = []
-for i in range(8):
-    for j in range(8):
-        tempT2.append(tempTiles[i][j])
-        tempL2.append(templabels[i][j])
-tiles = tempT2
-tiles_labels = tempL2
 
 #tiles index goes A1, B1, C1, D1, E1, F1, H1, A2, B2, ...
 # Index to piece label Cheat Sheet:

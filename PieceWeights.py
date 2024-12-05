@@ -168,8 +168,8 @@ def train_model(model, images, labels):
     plt.ylabel('Accuracy')
     plt.legend(loc='lower right')
 
-    return predictions
     #plt.show()
+    return predictions
 
 def cnn_testing():
     images, labels = load_images_from_folders("training_tiles/")

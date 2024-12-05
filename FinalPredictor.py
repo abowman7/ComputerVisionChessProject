@@ -244,41 +244,15 @@ for i in range(8):
     for j in range(8):
         board_array[7-i][j] = np.argmax(predictions[i*8+j])
 
-boardArray = board_array.reshape(8, 8)
-#boardArray = [boardA[7], boardA[6], boardA[5], boardA[4], boardA[3], boardA[2], boardA[1], boardA[0]]
 print(board_array)
 
 #tiles index goes A1, B1, C1, D1, E1, F1, H1, A2, B2, ...
 # Index to piece label Cheat Sheet:
-# 0 is empty square, 1 or 7 is pawn, 2 or 8 is rook,
-# 3 or 9 is knight, 4 or 10 is bishop, 5 or 11 is queen, 6 or 12 is king. 1-6 is White, 7-12 is black
-fenString = ""
-for arr in boardArray:
-    for tile in arr:
-        if tile == 1 or tile == 7:
-            fenString += "p"
-        elif tile == 2 or tile == 8:
-            fenString += "r"
-        elif tile == 3 or tile == 9:
-            fenString += "n"
-        elif tile == 4 or tile == 10:
-            fenString += "b"
-        elif tile == 5 or tile == 11:
-            fenString += "q"
-        elif tile == 6 or tile == 12:
-            fenString += "k"
-        else:
-            fenString += '1'
-        if tile <= 6 and tile >= 1:
-            fenString = fenString[:len(fenString)-1] + fenString[len(fenString)-1].upper()
-    fenString += "/"
-print("http://en.lichess.org/editor/%s" % fenString)
+# 0 - B Bishop, 1 - B King, 2 - B Knight, 3 - B Pawn, 4 - B Queen, 5 - B Rook, 6 = Blank Tile
+# 7 - W Bishop, 8 - W King, 9 - W Knight, 10 - W Pawn, 11 - W Queen, 12 - W Rook
+
 #this is an example array for now, replace with generated array later
 #boardArray = [[8,9,10,11,12,10,9,8],[7,7,7,7,7,7,7,7],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1],[2,3,4,5,6,4,3,2]]
-
-turn = 'w' #allow this to be selected as a user controlled input variable
-move = generateMove(boardArray, turn)
-
 #turn = 'w' #allow this to be selected as a user controlled input variable
 move = generateMove(board_array, turn)
 print(move)

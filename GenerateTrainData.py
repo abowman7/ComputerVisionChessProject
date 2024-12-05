@@ -81,77 +81,6 @@ def gridLines(hdx, hdy, hdx_thr, hdy_thr):
     
     return vertLines, horLines
 
-FEN = getRandomFEN()
-print(FEN)
-# Set up URL and output image filename for this run
-url = "http://en.lichess.org/editor/%s" % FEN
-output_filename = "randfens/randfenA.png"
-
-if not os.path.exists("./randfens/"):  
-    os.makedirs("randfens/") 
-
-if platform.system() == "Windows":
-    options = webdriver.EdgeOptions()
-    driver = webdriver.Edge(options = options)
-elif platform.system() == "Linux": #I use linux
-    options = webdriver.FirefoxOptions()
-    driver = webdriver.Firefox(options = options)
-
-# Open the webpage
-driver.get(url)
-
-time.sleep(2)
-
-link_element = driver.find_element(By.XPATH, '//a[text()="SCREENSHOT"]')  # Match the link text
-file_url = link_element.get_attribute('href')
-
-if file_url:
-    response = requests.get(file_url)
-    if response.status_code == 200:
-        with open(output_filename, 'wb') as file:
-            file.write(response.content)
-        print('File downloaded successfully!')
-    else:
-        print(f'Failed to download the file. HTTP status code: {response.status_code}')
-else:
-    print('No valid href found.')
-
-driver.quit()
-
-img = PIL.Image.open(output_filename)
-#comment this out when you know it works to run quicker
-
-#plt.imshow(img)
-#plt.show()
-
-a = np.asarray(img.convert("L"), dtype=np.float32)
-#gradient x to help get vertical grid for chess board
-grad_x = gradientx(a)
-#gradient y to help get horizontal grid for chess board
-grad_y = gradienty(a)
-
-#separate gradients between positive and negative
-#vertical gradient
-gxPos = tf.clip_by_value(grad_x, 0., 255., name="dx_positive")
-gxNeg = tf.clip_by_value(grad_x, -255., 0., name='dx_negative')
-#horizontal gradient
-gyPos = tf.clip_by_value(grad_y, 0., 255., name="dy_positive")
-gyNeg = tf.clip_by_value(grad_y, -255., 0., name='dy_negative')
-#get hough gradients (+ * -) / axis^2
-houghgx = tf.reduce_sum(gxPos, 0) * tf.reduce_sum(-gxNeg, 0) / (a.shape[0]*a.shape[0])
-houghgy = tf.reduce_sum(gyPos, 1) * tf.reduce_sum(-gyNeg, 1) / (a.shape[1]*a.shape[1])
-
-# make threshhold half of maximum hough gradient value for each
-houghgx_thr = tf.reduce_max(houghgx) / 2
-houghgy_thr = tf.reduce_max(houghgy) / 2
-
-# Get chess lines
-vertLines, horLines = gridLines(houghgx.numpy().flatten(), \
-                                           houghgy.numpy().flatten(), \
-                                           houghgx_thr.numpy()*.9, \
-                                           houghgy_thr.numpy()*.9)
-
-
 #split chess board into all 64 chess tiles and return array of each tile
 def sliceTiles(a, vertLines, horLines):
     # get average tile size
@@ -233,54 +162,126 @@ def sliceTiles(a, vertLines, horLines):
             tiles[:,:,(7-j)*8+i] = np.pad(a2[y1:y2, x1:x2],((leftYPad,rightYPad),(leftXPad,rightXPad)), mode='edge')
     return tiles
 
-tiles = sliceTiles(a, vertLines, horLines)
+def main():
+    FEN = getRandomFEN()
+    print(FEN)
+    # Set up URL and output image filename for this run
+    url = "http://en.lichess.org/editor/%s" % FEN
+    output_filename = "randfens/randfenA.png"
 
-letters = 'ABCDEFGH'
+    if not os.path.exists("./randfens/"):  
+        os.makedirs("randfens/") 
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-img_save_dir = dir_path+("/training_tiles/")
+    if platform.system() == "Windows":
+        options = webdriver.EdgeOptions()
+        driver = webdriver.Edge(options = options)
+    elif platform.system() == "Linux": #I use linux
+        options = webdriver.FirefoxOptions()
+        driver = webdriver.Firefox(options = options)
 
-multiFENs = FEN.split('/')
-multiFENs.reverse()
-print(multiFENs)
-count = 0
-for row in multiFENs:
-    for piece in row:
-        if piece == 'P':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'WhitePawns', 'WhitePawns')
-        elif piece == 'p':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlackPawns', 'BlackPawns')
-        elif piece == 'R':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'WhiteRooks', 'WhiteRooks')
-        elif piece == 'r':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlackRooks', 'BlackRooks')
-        elif piece == 'K':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'WhiteKings', 'WhiteKings')
-        elif piece == 'k':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlackKings', 'BlackKings')
-        elif piece == 'Q':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'WhiteQueens', 'WhiteQueens')
-        elif piece == 'q':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlackQueens', 'BlackQueens')
-        elif piece == 'B':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'WhiteBishops', 'WhiteBishops')
-        elif piece == 'b':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlackBishops', 'BlackBishops')
-        elif piece == 'N':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'WhiteKnights', 'WhiteKnights')
-        elif piece == 'n':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlackKnights', 'BlackKnights')
-        elif piece == '1':
-            sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlankTiles', 'BlankTiles')
-        file_counter = 1
-        base_filename, file_extension = os.path.splitext(sqr_filename)
-        while os.path.exists(sqr_filename):
-            sqr_filename = f"{base_filename}{file_counter}{file_extension}"
-            file_counter += 1
-        PIL.Image.fromarray(tiles[:,:,count]) \
-            .resize([32,32], PIL.Image.ADAPTIVE) \
-            .save(sqr_filename) 
-        count += 1
+    # Open the webpage
+    driver.get(url)
+
+    time.sleep(2)
+
+    link_element = driver.find_element(By.XPATH, '//a[text()="SCREENSHOT"]')  # Match the link text
+    file_url = link_element.get_attribute('href')
+
+    if file_url:
+        response = requests.get(file_url)
+        if response.status_code == 200:
+            with open(output_filename, 'wb') as file:
+                file.write(response.content)
+            print('File downloaded successfully!')
+        else:
+            print(f'Failed to download the file. HTTP status code: {response.status_code}')
+    else:
+        print('No valid href found.')
+
+    driver.quit()
+
+    img = PIL.Image.open(output_filename)
+    #comment this out when you know it works to run quicker
+
+    #plt.imshow(img)
+    #plt.show()
+
+    a = np.asarray(img.convert("L"), dtype=np.float32)
+    #gradient x to help get vertical grid for chess board
+    grad_x = gradientx(a)
+    #gradient y to help get horizontal grid for chess board
+    grad_y = gradienty(a)
+
+    #separate gradients between positive and negative
+    #vertical gradient
+    gxPos = tf.clip_by_value(grad_x, 0., 255., name="dx_positive")
+    gxNeg = tf.clip_by_value(grad_x, -255., 0., name='dx_negative')
+    #horizontal gradient
+    gyPos = tf.clip_by_value(grad_y, 0., 255., name="dy_positive")
+    gyNeg = tf.clip_by_value(grad_y, -255., 0., name='dy_negative')
+    #get hough gradients (+ * -) / axis^2
+    houghgx = tf.reduce_sum(gxPos, 0) * tf.reduce_sum(-gxNeg, 0) / (a.shape[0]*a.shape[0])
+    houghgy = tf.reduce_sum(gyPos, 1) * tf.reduce_sum(-gyNeg, 1) / (a.shape[1]*a.shape[1])
+
+    # make threshhold half of maximum hough gradient value for each
+    houghgx_thr = tf.reduce_max(houghgx) / 2
+    houghgy_thr = tf.reduce_max(houghgy) / 2
+
+    # Get chess lines
+    vertLines, horLines = gridLines(houghgx.numpy().flatten(), \
+                                            houghgy.numpy().flatten(), \
+                                            houghgx_thr.numpy()*.9, \
+                                            houghgy_thr.numpy()*.9)
+
+    tiles = sliceTiles(a, vertLines, horLines)
+
+    letters = 'ABCDEFGH'
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    img_save_dir = dir_path+("/training_tiles/")
+
+    multiFENs = FEN.split('/')
+    multiFENs.reverse()
+    print(multiFENs)
+    count = 0
+    for row in multiFENs:
+        for piece in row:
+            if piece == 'P':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'WhitePawns', 'WhitePawns')
+            elif piece == 'p':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlackPawns', 'BlackPawns')
+            elif piece == 'R':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'WhiteRooks', 'WhiteRooks')
+            elif piece == 'r':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlackRooks', 'BlackRooks')
+            elif piece == 'K':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'WhiteKings', 'WhiteKings')
+            elif piece == 'k':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlackKings', 'BlackKings')
+            elif piece == 'Q':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'WhiteQueens', 'WhiteQueens')
+            elif piece == 'q':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlackQueens', 'BlackQueens')
+            elif piece == 'B':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'WhiteBishops', 'WhiteBishops')
+            elif piece == 'b':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlackBishops', 'BlackBishops')
+            elif piece == 'N':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'WhiteKnights', 'WhiteKnights')
+            elif piece == 'n':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlackKnights', 'BlackKnights')
+            elif piece == '1':
+                sqr_filename = "%s/%s/%s.jpg" % (img_save_dir, 'BlankTiles', 'BlankTiles')
+            file_counter = 1
+            base_filename, file_extension = os.path.splitext(sqr_filename)
+            while os.path.exists(sqr_filename):
+                sqr_filename = f"{base_filename}{file_counter}{file_extension}"
+                file_counter += 1
+            PIL.Image.fromarray(tiles[:,:,count]) \
+                .resize([32,32], PIL.Image.ADAPTIVE) \
+                .save(sqr_filename) 
+            count += 1
     
-
+for _ in range(20):
+    main()
 

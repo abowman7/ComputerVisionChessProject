@@ -58,6 +58,7 @@ def generateMove(boardArray, turn):
                 if x != 7:
                     fenString += '/'
                 else:
+                    print("http://en.lichess.org/editor/%s" % fenString) #for determining if the FEN is correct
                     fenString += ' '
     fenString += turn + ' ' #this satisfies the second field
 
@@ -90,6 +91,7 @@ def generateMove(boardArray, turn):
     #below, use your own path for your own stockfish install
     stockfish = Stockfish(path="/Users/david/Downloads/stockfish-windows-x86-64-avx2/stockfish/stockfish-windows-x86-64-avx2.exe", depth=18, parameters={"Threads": 4, "Minimum Thinking Time": 30})
     stockfish.update_engine_parameters({"Hash": 2048, "UCI_Chess960": "true"})
+    stockfish.set_skill_level(20)
     stockfish.set_fen_position(fenString)
     bestMove =  stockfish.get_best_move()
     return bestMove

@@ -98,19 +98,19 @@ def cnn():
     # Add more convolutional layers to capture more complex features
     model.add(Conv2D(64, (3, 3), padding='same', activation='relu', input_shape=(32, 32, 1)))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+    #model.add(Dropout(0.25))
 
     model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+    #model.add(Dropout(0.25))
 
     model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+    #model.add(Dropout(0.25))
 
     model.add(Flatten())
     model.add(Dense(512, activation='relu'))
-    model.add(Dropout(0.5))
+    #model.add(Dropout(0.5))
     model.add(Dense(num_classes, activation='softmax'))
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
@@ -156,7 +156,7 @@ def train_model(model, images, labels):
     # Step 8: Evaluate the model
     loss, accuracy = model.evaluate(X_test, y_test)
 
-    if accuracy == 1:
+    if accuracy > 0.99:
         model.save('best_model.keras')
 
     print(f"Test accuracy: {accuracy * 100:.2f}%")
@@ -175,4 +175,4 @@ def cnn_testing():
     images, labels = load_images_from_folders("training_tiles/")
     model = cnn()
     preds = train_model(model, images, labels)
-cnn_testing()
+#cnn_testing()

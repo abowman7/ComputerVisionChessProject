@@ -23,70 +23,6 @@ def getRandomFEN():
     # can append ' w' or ' b' for white/black to play, defaults to white
     return fen
 
-FEN = getRandomFEN()
-print(FEN)
-# Set up URL and output image filename for this run
-url = "http://en.lichess.org/editor/%s" % FEN
-output_filename = "randfens/randfenA.png"
-
-if not os.path.exists("./randfens/"):  
-    os.makedirs("randfens/") 
-
-if platform.system() == "Windows":
-    options = webdriver.EdgeOptions()
-    driver = webdriver.Edge(options = options)
-elif platform.system() == "Linux": #I use linux
-    options = webdriver.FirefoxOptions()
-    driver = webdriver.Firefox(options = options)
-
-# Open the webpage
-driver.get(url)
-
-time.sleep(2)
-
-link_element = driver.find_element(By.XPATH, '//a[text()="SCREENSHOT"]')  # Match the link text
-file_url = link_element.get_attribute('href')
-
-if file_url:
-    response = requests.get(file_url)
-    if response.status_code == 200:
-        with open(output_filename, 'wb') as file:
-            file.write(response.content)
-        print('File downloaded successfully!')
-    else:
-        print(f'Failed to download the file. HTTP status code: {response.status_code}')
-else:
-    print('No valid href found.')
-
-driver.quit()
-
-img = PIL.Image.open(output_filename)
-#comment this out when you know it works to run quicker
-
-plt.imshow(img)
-plt.show()
-
-a = np.asarray(img.convert("L"), dtype=np.float32)
-#gradient x to help get vertical grid for chess board
-grad_x = gradientx(a)
-#gradient y to help get horizontal grid for chess board
-grad_y = gradienty(a)
-
-#separate gradients between positive and negative
-#vertical gradient
-gxPos = tf.clip_by_value(grad_x, 0., 255., name="dx_positive")
-gxNeg = tf.clip_by_value(grad_x, -255., 0., name='dx_negative')
-#horizontal gradient
-gyPos = tf.clip_by_value(grad_y, 0., 255., name="dy_positive")
-gyNeg = tf.clip_by_value(grad_y, -255., 0., name='dy_negative')
-#get hough gradients (+ * -) / axis^2
-houghgx = tf.reduce_sum(gxPos, 0) * tf.reduce_sum(-gxNeg, 0) / (a.shape[0]*a.shape[0])
-houghgy = tf.reduce_sum(gyPos, 1) * tf.reduce_sum(-gyNeg, 1) / (a.shape[1]*a.shape[1])
-
-# make threshhold half of maximum hough gradient value for each
-houghgx_thr = tf.reduce_max(houghgx) / 2
-houghgy_thr = tf.reduce_max(houghgy) / 2
-
 def pruneLines(lineset):
     linediff = np.diff(lineset)
     x = 0
@@ -144,6 +80,70 @@ def gridLines(hdx, hdy, hdx_thr, hdy_thr):
     #is_match = len(vertLines) == 7 and len(horLines) == 7 and checkMatch(vertLines) and checkMatch(horLines)
     
     return vertLines, horLines
+
+FEN = getRandomFEN()
+print(FEN)
+# Set up URL and output image filename for this run
+url = "http://en.lichess.org/editor/%s" % FEN
+output_filename = "randfens/randfenA.png"
+
+if not os.path.exists("./randfens/"):  
+    os.makedirs("randfens/") 
+
+if platform.system() == "Windows":
+    options = webdriver.EdgeOptions()
+    driver = webdriver.Edge(options = options)
+elif platform.system() == "Linux": #I use linux
+    options = webdriver.FirefoxOptions()
+    driver = webdriver.Firefox(options = options)
+
+# Open the webpage
+driver.get(url)
+
+time.sleep(2)
+
+link_element = driver.find_element(By.XPATH, '//a[text()="SCREENSHOT"]')  # Match the link text
+file_url = link_element.get_attribute('href')
+
+if file_url:
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        with open(output_filename, 'wb') as file:
+            file.write(response.content)
+        print('File downloaded successfully!')
+    else:
+        print(f'Failed to download the file. HTTP status code: {response.status_code}')
+else:
+    print('No valid href found.')
+
+driver.quit()
+
+img = PIL.Image.open(output_filename)
+#comment this out when you know it works to run quicker
+
+#plt.imshow(img)
+#plt.show()
+
+a = np.asarray(img.convert("L"), dtype=np.float32)
+#gradient x to help get vertical grid for chess board
+grad_x = gradientx(a)
+#gradient y to help get horizontal grid for chess board
+grad_y = gradienty(a)
+
+#separate gradients between positive and negative
+#vertical gradient
+gxPos = tf.clip_by_value(grad_x, 0., 255., name="dx_positive")
+gxNeg = tf.clip_by_value(grad_x, -255., 0., name='dx_negative')
+#horizontal gradient
+gyPos = tf.clip_by_value(grad_y, 0., 255., name="dy_positive")
+gyNeg = tf.clip_by_value(grad_y, -255., 0., name='dy_negative')
+#get hough gradients (+ * -) / axis^2
+houghgx = tf.reduce_sum(gxPos, 0) * tf.reduce_sum(-gxNeg, 0) / (a.shape[0]*a.shape[0])
+houghgy = tf.reduce_sum(gyPos, 1) * tf.reduce_sum(-gyNeg, 1) / (a.shape[1]*a.shape[1])
+
+# make threshhold half of maximum hough gradient value for each
+houghgx_thr = tf.reduce_max(houghgx) / 2
+houghgy_thr = tf.reduce_max(houghgy) / 2
 
 # Get chess lines
 vertLines, horLines = gridLines(houghgx.numpy().flatten(), \

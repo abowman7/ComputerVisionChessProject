@@ -86,7 +86,7 @@ def generateMove(boardArray, turn):
 
     #determined that the last 3 fields are not necessary for Stockfish to still make its prediction
     #fenString += " - 0 1" #handles last 3 fields, but we aren't caring about them much right now
-
+    #"C:\Users\Adam\Downloads\stockfish-windows-x86-64-avx2\stockfish\stockfish-windows-x86-64-avx2.exe"
     #below, use your own path for your own stockfish install
     stockfish = Stockfish(path="/Users/david/Downloads/stockfish-windows-x86-64-avx2/stockfish/stockfish-windows-x86-64-avx2.exe", depth=18, parameters={"Threads": 4, "Minimum Thinking Time": 30})
     stockfish.update_engine_parameters({"Hash": 2048, "UCI_Chess960": "true"})

@@ -15,7 +15,7 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -32,8 +32,12 @@ def showImage(a, fmt='jpeg', rng=[0,1]):
   PIL.Image.fromarray(a).show()
 
 #input file Here:
-img_file = 'Game7.jpeg'
+#img_file = 'Game7.jpeg'
+img_file = input('Path to input image: ')
+turn = input('Which players turn? (w/b): ')
 img = PIL.Image.open(f"input_boards/{img_file}")
+#img = PIL.Image.open("randfens/randfenA.png")
+
 
 #convert from png to jpg if png
 if img.mode == 'RGBA':
@@ -228,19 +232,21 @@ tiles = ttiles
 
 # Define the base folder path
 base_folder = 'training_tiles'
-ima, labes = load_images_from_folders(base_folder)
-model = cnn()
-test_predictions = train_model(model, ima, labes)
+# ima, labes = load_images_from_folders(base_folder)
+model = load_model("best_model.keras")
+#test_predictions = train_model(model, ima, labes)
 
 predictions = model.predict(tiles)
 
-tiles_labels = np.zeros((64))
+board_array = np.zeros((8,8))
 
-for i in range(len(predictions)):
-    tiles_labels[i] = np.argmax(predictions[i])
+for i in range(8):
+    for j in range(8):
+        board_array[7-i][j] = np.argmax(predictions[i*8+j])
 
-boardA = tiles_labels.reshape(8, 8)
-boardArray = [boardA[7], boardA[6], boardA[5], boardA[4], boardA[3], boardA[2], boardA[1], boardA[0]]
+boardArray = board_array.reshape(8, 8)
+#boardArray = [boardA[7], boardA[6], boardA[5], boardA[4], boardA[3], boardA[2], boardA[1], boardA[0]]
+print(board_array)
 
 #tiles index goes A1, B1, C1, D1, E1, F1, H1, A2, B2, ...
 # Index to piece label Cheat Sheet:
@@ -269,6 +275,10 @@ for arr in boardArray:
 print("http://en.lichess.org/editor/%s" % fenString)
 #this is an example array for now, replace with generated array later
 #boardArray = [[8,9,10,11,12,10,9,8],[7,7,7,7,7,7,7,7],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1],[2,3,4,5,6,4,3,2]]
+
 turn = 'w' #allow this to be selected as a user controlled input variable
 move = generateMove(boardArray, turn)
+
+#turn = 'w' #allow this to be selected as a user controlled input variable
+move = generateMove(board_array, turn)
 print(move)
